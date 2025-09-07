@@ -1,0 +1,57 @@
+---
+- hosts: all
+  become: true
+
+  vars_files:
+    - vars.yaml
+
+  pre_tasks:
+    - name: Print variables
+      debug:
+        var: ansible_facts.hostvars
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+
+  tasks:
+    - name: Install basic packages
+      apt:
+        name:
+          - curl
+          - git
+          - wget
+          - vim
+        state: present
+
+    - name: Remove unnecessary packages
+      apt:
+        autoremove: yes
+        purge: yes
+
+    - name: Check if reboot is required
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Notify if reboot is required
+      debug:
+        msg: "Reboot is required to complete the update"
+      when: reboot_required.stat.exists
+
+    - name: Check system information
+      shell: |
+        echo "Hostname: $(hostname)"
+        echo "OS: $(cat /etc/os-release | grep PRETTY_NAME)"
+        echo "Architecture: $(uname -m)"
+        echo "Kernel: $(uname -r)"
+      register: system_info
+
+    - name: Display system info
+      debug:
+        var: system_info.stdout_lines

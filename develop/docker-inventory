@@ -1,0 +1,9 @@
+[app_servers]
+vms-app1-1 ansible_connection=docker
+vms-app2-1 ansible_connection=docker
+
+[db_servers]
+vms-db-1 ansible_connection=docker
+
+[all:vars]
+ansible_user=root

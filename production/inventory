@@ -1,0 +1,5 @@
+[app]
+pi1.local
+pi02.local
+
+[all:vars]

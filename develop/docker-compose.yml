@@ -1,0 +1,40 @@
+services:
+  app1:
+    image: debian:bookworm
+    hostname: pis-app1.test
+    networks:
+      pis_network:
+        ipv4_address: 192.168.60.4
+    volumes:
+      - /tmp
+    privileged: true
+    command: /bin/bash -c "apt-get update && apt-upgrade -y"
+
+  app2:
+    image: debian:bookworm
+    hostname: pis-app2.test
+    networks:
+      pis_network:
+        ipv4_address: 192.168.60.5
+    volumes:
+      - /tmp
+    privileged: true
+    command: /bin/bash -c "apt-get update && apt-upgrade -y"
+
+  db:
+    image: debian:bookworm
+    hostname: pis-db.test
+    networks:
+      pis_network:
+        ipv4_address: 192.168.60.6
+    volumes:
+      - /tmp
+    privileged: true
+    command: /bin/bash -c "apt-get update && apt-upgrade -y"
+
+networks:
+  pis_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.60.0/24
