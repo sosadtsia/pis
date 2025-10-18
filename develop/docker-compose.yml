@@ -2,35 +2,104 @@ services:
   app1:
     image: debian:bookworm
     hostname: pis-app1.test
+    ports:
+      - "2221:22"
     networks:
       pis_network:
         ipv4_address: 192.168.60.4
     volumes:
       - /tmp
     privileged: true
-    command: /bin/bash -c "apt-get update && apt-upgrade -y"
+    healthcheck:
+      test: ["CMD", "pgrep", "sshd"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    command: >
+      /bin/bash -c "
+      apt-get update &&
+      apt-get upgrade -y &&
+      apt-get install -y sudo openssh-server python3 &&
+      mkdir -p /run/sshd &&
+      useradd -m -s /bin/bash pidev &&
+      usermod -aG sudo pidev &&
+      sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config &&
+      sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+      /usr/sbin/sshd &&
+      sleep 2 &&
+      echo 'pidev:pidev' | chpasswd &&
+      pkill -HUP sshd &&
+      tail -f /dev/null
+      "
 
   app2:
     image: debian:bookworm
     hostname: pis-app2.test
+    ports:
+      - "2222:22"
     networks:
       pis_network:
         ipv4_address: 192.168.60.5
     volumes:
       - /tmp
     privileged: true
-    command: /bin/bash -c "apt-get update && apt-upgrade -y"
+    healthcheck:
+      test: ["CMD", "pgrep", "sshd"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    command: >
+      /bin/bash -c "
+      apt-get update &&
+      apt-get upgrade -y &&
+      apt-get install -y sudo openssh-server python3 &&
+      mkdir -p /run/sshd &&
+      useradd -m -s /bin/bash pidev &&
+      usermod -aG sudo pidev &&
+      sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config &&
+      sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+      /usr/sbin/sshd &&
+      sleep 2 &&
+      echo 'pidev:pidev' | chpasswd &&
+      pkill -HUP sshd &&
+      tail -f /dev/null
+      "
 
   db:
     image: debian:bookworm
     hostname: pis-db.test
+    ports:
+      - "2223:22"
     networks:
       pis_network:
         ipv4_address: 192.168.60.6
     volumes:
       - /tmp
     privileged: true
-    command: /bin/bash -c "apt-get update && apt-upgrade -y"
+    healthcheck:
+      test: ["CMD", "pgrep", "sshd"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    command: >
+      /bin/bash -c "
+      apt-get update &&
+      apt-get upgrade -y &&
+      apt-get install -y sudo openssh-server python3 &&
+      mkdir -p /run/sshd &&
+      useradd -m -s /bin/bash pidev &&
+      usermod -aG sudo pidev &&
+      sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config &&
+      sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config &&
+      /usr/sbin/sshd &&
+      sleep 2 &&
+      echo 'pidev:pidev' | chpasswd &&
+      pkill -HUP sshd &&
+      tail -f /dev/null
+      "
 
 networks:
   pis_network:

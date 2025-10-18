@@ -1,9 +1,13 @@
 [app_servers]
-vms-app1-1 ansible_connection=docker
-vms-app2-1 ansible_connection=docker
+app1 ansible_host=127.0.0.1 ansible_port=2221
+app2 ansible_host=127.0.0.1 ansible_port=2222
 
 [db_servers]
-vms-db-1 ansible_connection=docker
+db ansible_host=127.0.0.1 ansible_port=2223
 
 [all:vars]
-ansible_user=root
+ansible_user=pidev
+ansible_ssh_pass=pidev
+ansible_become_pass=pidev
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
