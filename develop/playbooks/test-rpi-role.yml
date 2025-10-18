@@ -1,0 +1,33 @@
+---
+- name: Test Raspberry Pi role in development environment
+  hosts: all
+  become: true
+  roles:
+    - role: ../../ansible-role-rpi
+      vars:
+        # Minimal config for testing
+        rpi_update_cache: true
+        rpi_upgrade_type: "safe"
+        rpi_essential_packages:
+          - curl
+          - wget
+          - git
+          - vim
+          - htop
+        rpi_enable_ufw: false  # Disable for testing
+        rpi_enable_fail2ban: false  # Disable for testing
+        rpi_configure_ssh: false  # Already configured
+        rpi_install_docker: false
+        rpi_auto_reboot: false
+
+        # Disable hardware/GPIO components
+        rpi_install_gpio_packages: false
+        rpi_add_users_to_gpio: false
+        rpi_configure_gpu_mem: false
+        rpi_overclock: false
+        rpi_enable_i2c: false
+        rpi_enable_spi: false
+        rpi_enable_camera: false
+        rpi_enable_serial: false
+        rpi_enable_1wire: false
+

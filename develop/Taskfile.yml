@@ -1,0 +1,87 @@
+version: '3'
+
+tasks:
+  up:
+    desc: Start containers
+    cmds:
+      - docker-compose up -d
+      - echo "Waiting for containers to initialize..."
+      - sleep 5
+      - echo "Containers are starting. Wait ~35 more seconds before connecting."
+
+  down:
+    desc: Stop and remove containers (cleans SSH keys)
+    deps: [clean-ssh]
+    cmds:
+      - docker-compose down
+
+  restart:
+    desc: Restart all containers
+    cmds:
+      - task: down
+      - task: up
+
+  clean-ssh:
+    desc: Remove SSH host keys from known_hosts
+    cmds:
+      - echo "Cleaning SSH host keys..."
+      - ssh-keygen -R "[127.0.0.1]:2221" 2>/dev/null || true
+      - ssh-keygen -R "[127.0.0.1]:2222" 2>/dev/null || true
+      - ssh-keygen -R "[127.0.0.1]:2223" 2>/dev/null || true
+      - echo "SSH keys cleaned"
+    silent: false
+
+  logs:
+    desc: Show container logs
+    cmds:
+      - docker-compose logs -f
+
+  ps:
+    desc: Show container status
+    cmds:
+      - docker-compose ps
+
+  test:
+    desc: Test SSH connectivity to all containers
+    cmds:
+      - echo "Testing SSH connections..."
+      - |
+        for port in 2221 2222 2223; do
+          echo "Port $port:"
+          sshpass -p 'pidev' ssh -p $port pidev@127.0.0.1 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "hostname" 2>/dev/null && echo "✓ Success" || echo "✗ Failed"
+        done
+
+  ping:
+    desc: Test Ansible connectivity
+    cmds:
+      - ansible -i docker-inventory all -m ping
+
+  rebuild:
+    desc: Rebuild containers from scratch
+    cmds:
+      - docker-compose down -v
+      - task: clean-ssh
+      - docker-compose up -d --build
+      - echo "Containers rebuilt. Wait ~40 seconds before connecting."
+
+  shell-user:
+    desc: Open bash shell as pidev user (usage - task shell-user CONTAINER=app1)
+    cmds:
+      - docker exec -it -u pidev develop-{{.CONTAINER}}-1 bash
+    vars:
+      CONTAINER: '{{.CONTAINER | default "app1"}}'
+
+  playbook:
+    desc: Run ansible-playbook (usage - task playbook -- playbooks/ntp.yaml [extra-args])
+    cmds:
+      - ansible-playbook -i docker-inventory {{.CLI_ARGS}}
+
+  test-role:
+    desc: Test the ansible-role-rpi against develop containers
+    cmds:
+      - ansible-playbook -i docker-inventory playbooks/test-rpi-role.yml {{.CLI_ARGS}}
+
+  test-role-check:
+    desc: Test ansible-role-rpi in check mode (dry-run)
+    cmds:
+      - ansible-playbook -i docker-inventory playbooks/test-rpi-role.yml --check --diff
